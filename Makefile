@@ -1,15 +1,10 @@
 # Makefile for tool project
 #
 
-now := $(shell date)
+# ISO 8601 format with timezone, precision to seconds: YYYY-MM-DDTHH:MM:SS+TZ:TZ
+now := $(shell date +%Y-%m-%dT%H:%M:%S%z)
 
-.PHONY: help auto_commit
-
-# Put it first so that "make" without argument is like "make help".
-help:
-	@echo "Available targets:"
-	@echo "  auto_commit  - Add, commit, pull and push all changes with timestamp"
-	@echo "  help         - Show this help message"
+# .PHONY: help auto_commit
 
 # Auto commit: add all changes, commit with timestamp, pull and push
 auto_commit:
@@ -18,3 +13,9 @@ auto_commit:
 	git commit -am "$(now)"
 	git pull
 	git push
+
+# Put it first so that "make" without argument is like "make help".
+help:
+	@echo "Available targets:"
+	@echo "  auto_commit  - Add, commit, pull and push all changes with timestamp"
+	@echo "  help         - Show this help message"
