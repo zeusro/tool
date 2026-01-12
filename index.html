@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能文本处理工具</title>
+    <title data-i18n="title">智能文本处理工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="i18n.js"></script>
+    <script src="go-struct-to-json.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -43,12 +45,21 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
     <div class="container mx-auto px-4 py-8">
+        <!-- Language Switcher -->
+        <div class="flex justify-end mb-4">
+            <div class="flex gap-2">
+                <button onclick="switchLanguage('zh-CN')" id="lang-zh-CN" class="px-3 py-1 rounded-lg bg-purple-600 bg-opacity-30 hover:bg-opacity-50 transition-all text-sm">中文</button>
+                <button onclick="switchLanguage('zh-TW')" id="lang-zh-TW" class="px-3 py-1 rounded-lg bg-purple-600 bg-opacity-30 hover:bg-opacity-50 transition-all text-sm">繁體</button>
+                <button onclick="switchLanguage('en-US')" id="lang-en-US" class="px-3 py-1 rounded-lg bg-purple-600 bg-opacity-30 hover:bg-opacity-50 transition-all text-sm">English</button>
+            </div>
+        </div>
+        
         <!-- Header -->
         <header class="text-center mb-12">
-            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient" data-i18n="title">
                 智能文本处理工具
             </h1>
-            <p class="text-gray-300 text-lg">多功能文本处理与解析工具集</p>
+            <p class="text-gray-300 text-lg" data-i18n="subtitle">多功能文本处理与解析工具集</p>
         </header>
 
 
@@ -56,32 +67,33 @@
         <div class="max-w-6xl mx-auto">
             <!-- Input Section -->
             <div class="mb-6">
-                <label class="block text-sm font-medium mb-2 text-gray-300">输入内容</label>
+                <label class="block text-sm font-medium mb-2 text-gray-300" data-i18n="inputLabel">输入内容</label>
                 <textarea 
                     id="input" 
-                    placeholder="智能识别：输入 URL、JSON、UA 或 Base64，系统会自动检测并处理..."
+                    data-i18n="inputPlaceholder"
+                    placeholder="智能识别：输入 URL、JSON、UA、Go Struct 或 Base64，系统会自动检测并处理..."
                     class="w-full h-40 px-4 py-3 rounded-lg dark-glass text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 ></textarea>
             </div>
 
             <!-- Action Buttons -->
             <div class="mb-6 flex gap-4 justify-center">
-                <button onclick="processInput()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button onclick="processInput()" id="btn-process" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg" data-i18n="process">
                     ✨ 处理
                 </button>
-                <button onclick="clearAll()" class="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-700 rounded-lg font-semibold hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button onclick="clearAll()" id="btn-clear" class="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-700 rounded-lg font-semibold hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg" data-i18n="clear">
                     🗑️ 清空
                 </button>
-                <button onclick="copyOutput()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button onclick="copyOutput()" id="btn-copy" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg" data-i18n="copy">
                     📋 复制结果
                 </button>
             </div>
 
             <!-- Output Section -->
             <div>
-                <label class="block text-sm font-medium mb-2 text-gray-300">输出结果</label>
+                <label class="block text-sm font-medium mb-2 text-gray-300" data-i18n="outputLabel">输出结果</label>
                 <div id="output" class="w-full min-h-40 px-4 py-3 rounded-lg dark-glass text-white whitespace-pre-wrap break-words">
-                    <p class="text-gray-400 text-center">处理结果将显示在这里...</p>
+                    <p class="text-gray-400 text-center" data-i18n="outputPlaceholder">处理结果将显示在这里...</p>
                 </div>
             </div>
         </div>
@@ -143,7 +155,12 @@
                 }
             }
             
-            // 4. Check for Base64 (only contains base64 characters, no JSON/URL patterns)
+            // 4. Check for Go Struct
+            if (isGoStruct && isGoStruct(trimmed)) {
+                return 'go-struct';
+            }
+            
+            // 5. Check for Base64 (only contains base64 characters, no JSON/URL patterns)
             const base64Regex = /^[A-Za-z0-9+/=\s]+$/;
             if (base64Regex.test(trimmed) && trimmed.length > 10) {
                 // Must not start with {, [, http, or contain ://
@@ -157,9 +174,49 @@
                 }
             }
             
-            // 5. Default: treat as text to encode to base64
+            // 6. Default: treat as text to encode to base64
             return 'base64';
         }
+
+        // Language switcher
+        function switchLanguage(lang) {
+            if (window.i18n && window.i18n.setLanguage(lang)) {
+                // Update active language button
+                document.querySelectorAll('[id^="lang-"]').forEach(btn => {
+                    btn.classList.remove('bg-opacity-50', 'ring-2', 'ring-purple-400');
+                    btn.classList.add('bg-opacity-30');
+                });
+                const activeBtn = document.getElementById(`lang-${lang}`);
+                if (activeBtn) {
+                    activeBtn.classList.remove('bg-opacity-30');
+                    activeBtn.classList.add('bg-opacity-50', 'ring-2', 'ring-purple-400');
+                }
+            }
+        }
+
+        // Update language button on language change
+        function updateLanguageButtons(lang) {
+            document.querySelectorAll('[id^="lang-"]').forEach(btn => {
+                btn.classList.remove('bg-opacity-50', 'ring-2', 'ring-purple-400');
+                btn.classList.add('bg-opacity-30');
+            });
+            const activeBtn = document.getElementById(`lang-${lang}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-opacity-30');
+                activeBtn.classList.add('bg-opacity-50', 'ring-2', 'ring-purple-400');
+            }
+        }
+
+        window.addEventListener('languageChanged', (e) => {
+            updateLanguageButtons(e.detail.language);
+        });
+
+        // Initialize language button on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.i18n) {
+                updateLanguageButtons(window.i18n.getLanguage());
+            }
+        });
 
         // Process input with auto-detection
         function processInput() {
@@ -167,7 +224,7 @@
             const outputDiv = document.getElementById('output');
             
             if (!input) {
-                outputDiv.innerHTML = '<p class="text-red-400 text-center">请输入内容！</p>';
+                outputDiv.innerHTML = `<p class="text-red-400 text-center">${window.i18n ? window.i18n.t('errorEmpty') : '请输入内容！'}</p>`;
                 return;
             }
 
@@ -177,29 +234,35 @@
             let toolName = '';
             
             try {
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                
                 switch(detectedType) {
                     case 'url':
-                        toolName = '🔗 URL 解析';
+                        toolName = t('urlTool');
                         result = processURL(input);
                         break;
                     case 'json-compress':
-                        toolName = '📦 JSON 压缩/解压';
+                        toolName = t('jsonCompressTool');
                         result = processJSONCompress(input);
                         break;
                     case 'json-format':
-                        toolName = '📄 JSON 格式化';
+                        toolName = t('jsonFormatTool');
                         result = processJSONFormat(input);
                         break;
                     case 'ua':
-                        toolName = '🌐 UA 分析';
+                        toolName = t('uaTool');
                         result = processUA(input);
                         break;
+                    case 'go-struct':
+                        toolName = t('goStructTool');
+                        result = processGoStructToJSON(input);
+                        break;
                     case 'base64':
-                        toolName = '🔐 Base64 工具';
+                        toolName = t('base64Tool');
                         result = processBase64(input);
                         break;
                     default:
-                        toolName = '🔐 Base64 工具';
+                        toolName = t('base64Tool');
                         result = processBase64(input);
                 }
                 
@@ -210,13 +273,16 @@
                 
                 outputDiv.innerHTML = toolIndicator + result;
             } catch (error) {
-                outputDiv.innerHTML = `<p class="text-red-400">错误: ${error.message}</p>`;
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                outputDiv.innerHTML = `<p class="text-red-400">${t('errorPrefix')}${error.message}</p>`;
             }
         }
 
         // URL Parser
         function processURL(url) {
             try {
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                
                 // Decode URL
                 let decoded = decodeURIComponent(url);
                 // Add protocol if missing
@@ -229,19 +295,19 @@
                 
                 // Basic URL info
                 html += '<div class="bg-purple-500 bg-opacity-20 p-4 rounded-lg">';
-                html += '<h3 class="text-lg font-semibold mb-2 text-purple-300">URL 基本信息</h3>';
-                html += `<p><span class="text-gray-400">协议:</span> <span class="text-cyan-400">${urlObj.protocol}</span></p>`;
-                html += `<p><span class="text-gray-400">主机:</span> <span class="text-cyan-400">${urlObj.hostname}</span></p>`;
-                html += `<p><span class="text-gray-400">端口:</span> <span class="text-cyan-400">${urlObj.port || '默认'}</span></p>`;
-                html += `<p><span class="text-gray-400">路径:</span> <span class="text-cyan-400">${urlObj.pathname}</span></p>`;
-                html += `<p><span class="text-gray-400">哈希:</span> <span class="text-cyan-400">${urlObj.hash || '无'}</span></p>`;
+                html += `<h3 class="text-lg font-semibold mb-2 text-purple-300">${t('urlBasicInfo')}</h3>`;
+                html += `<p><span class="text-gray-400">${t('urlProtocol')}</span> <span class="text-cyan-400">${urlObj.protocol}</span></p>`;
+                html += `<p><span class="text-gray-400">${t('urlHost')}</span> <span class="text-cyan-400">${urlObj.hostname}</span></p>`;
+                html += `<p><span class="text-gray-400">${t('urlPort')}</span> <span class="text-cyan-400">${urlObj.port || t('urlDefaultPort')}</span></p>`;
+                html += `<p><span class="text-gray-400">${t('urlPath')}</span> <span class="text-cyan-400">${urlObj.pathname}</span></p>`;
+                html += `<p><span class="text-gray-400">${t('urlHash')}</span> <span class="text-cyan-400">${urlObj.hash || t('urlNoHash')}</span></p>`;
                 html += '</div>';
                 
                 // Query parameters
                 const params = urlObj.searchParams;
                 if (params.toString()) {
                     html += '<div class="bg-blue-500 bg-opacity-20 p-4 rounded-lg">';
-                    html += '<h3 class="text-lg font-semibold mb-3 text-blue-300">Query String 参数</h3>';
+                    html += `<h3 class="text-lg font-semibold mb-3 text-blue-300">${t('urlQueryParams')}</h3>`;
                     html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">';
                     
                     params.forEach((value, key) => {
@@ -255,20 +321,23 @@
                     html += '</div>';
                 } else {
                     html += '<div class="bg-gray-500 bg-opacity-20 p-4 rounded-lg">';
-                    html += '<p class="text-gray-400">未找到 Query String 参数</p>';
+                    html += `<p class="text-gray-400">${t('urlNoQueryParams')}</p>`;
                     html += '</div>';
                 }
                 
                 html += '</div>';
                 return html;
             } catch (error) {
-                return `<p class="text-red-400">URL 解析错误: ${error.message}</p>`;
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                return `<p class="text-red-400">${t('urlParseError')}${error.message}</p>`;
             }
         }
 
         // JSON Compress/Decompress
         function processJSONCompress(jsonStr) {
             try {
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                
                 // Try to parse as JSON first
                 let jsonObj = JSON.parse(jsonStr);
                 
@@ -278,46 +347,52 @@
                 if (isCompressed) {
                     // Decompress (format)
                     return `<div class="bg-green-500 bg-opacity-20 p-4 rounded-lg">
-                        <h3 class="text-lg font-semibold mb-2 text-green-300">解压缩后的 JSON</h3>
+                        <h3 class="text-lg font-semibold mb-2 text-green-300">${t('jsonDecompressed')}</h3>
                         <pre class="bg-black bg-opacity-40 p-4 rounded overflow-x-auto text-sm">${JSON.stringify(jsonObj, null, 2)}</pre>
                     </div>`;
                 } else {
                     // Compress
                     const compressed = JSON.stringify(jsonObj);
                     return `<div class="bg-orange-500 bg-opacity-20 p-4 rounded-lg">
-                        <h3 class="text-lg font-semibold mb-2 text-orange-300">压缩后的 JSON</h3>
+                        <h3 class="text-lg font-semibold mb-2 text-orange-300">${t('jsonCompressed')}</h3>
                         <pre class="bg-black bg-opacity-40 p-4 rounded overflow-x-auto text-sm break-all">${compressed}</pre>
                     </div>`;
                 }
             } catch (error) {
-                return `<p class="text-red-400">JSON 处理错误: ${error.message}</p>`;
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                return `<p class="text-red-400">${t('jsonError')}${error.message}</p>`;
             }
         }
 
         // JSON Format
         function processJSONFormat(jsonStr) {
             try {
+                const t = window.i18n ? window.i18n.t : (key) => key;
                 const jsonObj = JSON.parse(jsonStr);
                 const formatted = JSON.stringify(jsonObj, null, 2);
                 
                 return `<div class="bg-indigo-500 bg-opacity-20 p-4 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-2 text-indigo-300">格式化后的 JSON</h3>
+                    <h3 class="text-lg font-semibold mb-2 text-indigo-300">${t('jsonFormatted')}</h3>
                     <pre class="bg-black bg-opacity-40 p-4 rounded overflow-x-auto text-sm">${formatted}</pre>
                 </div>`;
             } catch (error) {
-                return `<p class="text-red-400">JSON 格式化错误: ${error.message}</p>`;
+                const t = window.i18n ? window.i18n.t : (key) => key;
+                return `<p class="text-red-400">${t('jsonFormatError')}${error.message}</p>`;
             }
         }
 
         // UA Analyzer
         function processUA(ua) {
+            const t = window.i18n ? window.i18n.t : (key) => key;
+            const unknown = t('uaUnknown');
+            
             const info = {
-                browser: '未知',
-                browserVersion: '未知',
-                os: '未知',
-                osVersion: '未知',
-                device: '未知',
-                engine: '未知',
+                browser: unknown,
+                browserVersion: unknown,
+                os: unknown,
+                osVersion: unknown,
+                device: unknown,
+                engine: unknown,
                 mobile: false,
                 tablet: false,
                 desktop: false
@@ -327,23 +402,23 @@
             if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
                 const match = ua.match(/Chrome\/([\d.]+)/);
                 info.browser = 'Chrome';
-                info.browserVersion = match ? match[1] : '未知';
+                info.browserVersion = match ? match[1] : unknown;
             } else if (ua.includes('Firefox')) {
                 const match = ua.match(/Firefox\/([\d.]+)/);
                 info.browser = 'Firefox';
-                info.browserVersion = match ? match[1] : '未知';
+                info.browserVersion = match ? match[1] : unknown;
             } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
                 const match = ua.match(/Version\/([\d.]+).*Safari/);
                 info.browser = 'Safari';
-                info.browserVersion = match ? match[1] : '未知';
+                info.browserVersion = match ? match[1] : unknown;
             } else if (ua.includes('Edg')) {
                 const match = ua.match(/Edg\/([\d.]+)/);
                 info.browser = 'Edge';
-                info.browserVersion = match ? match[1] : '未知';
+                info.browserVersion = match ? match[1] : unknown;
             } else if (ua.includes('OPR')) {
                 const match = ua.match(/OPR\/([\d.]+)/);
                 info.browser = 'Opera';
-                info.browserVersion = match ? match[1] : '未知';
+                info.browserVersion = match ? match[1] : unknown;
             }
 
             // OS detection
@@ -374,7 +449,7 @@
             } else if (ua.includes('Android')) {
                 info.os = 'Android';
                 const match = ua.match(/Android ([\d.]+)/);
-                info.osVersion = match ? match[1] : '未知';
+                info.osVersion = match ? match[1] : unknown;
                 info.mobile = true;
             } else if (ua.includes('iPhone') || ua.includes('iPad')) {
                 info.os = 'iOS';
@@ -405,34 +480,34 @@
 
             let html = '<div class="space-y-4">';
             html += '<div class="bg-cyan-500 bg-opacity-20 p-4 rounded-lg">';
-            html += '<h3 class="text-lg font-semibold mb-3 text-cyan-300">客户端信息分析</h3>';
+            html += `<h3 class="text-lg font-semibold mb-3 text-cyan-300">${t('uaClientInfo')}</h3>`;
             html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
             
             html += `<div class="bg-black bg-opacity-30 p-3 rounded">
-                <p class="text-gray-400 text-sm mb-1">浏览器</p>
+                <p class="text-gray-400 text-sm mb-1">${t('uaBrowser')}</p>
                 <p class="text-cyan-400 font-semibold">${info.browser} ${info.browserVersion}</p>
             </div>`;
             
             html += `<div class="bg-black bg-opacity-30 p-3 rounded">
-                <p class="text-gray-400 text-sm mb-1">操作系统</p>
+                <p class="text-gray-400 text-sm mb-1">${t('uaOS')}</p>
                 <p class="text-green-400 font-semibold">${info.os} ${info.osVersion}</p>
             </div>`;
             
             html += `<div class="bg-black bg-opacity-30 p-3 rounded">
-                <p class="text-gray-400 text-sm mb-1">渲染引擎</p>
+                <p class="text-gray-400 text-sm mb-1">${t('uaEngine')}</p>
                 <p class="text-yellow-400 font-semibold">${info.engine}</p>
             </div>`;
             
             html += `<div class="bg-black bg-opacity-30 p-3 rounded">
-                <p class="text-gray-400 text-sm mb-1">设备类型</p>
-                <p class="text-purple-400 font-semibold">${info.mobile ? '📱 移动设备' : info.tablet ? '📱 平板设备' : '💻 桌面设备'}</p>
+                <p class="text-gray-400 text-sm mb-1">${t('uaDevice')}</p>
+                <p class="text-purple-400 font-semibold">${info.mobile ? t('uaMobile') : info.tablet ? t('uaTablet') : t('uaDesktop')}</p>
             </div>`;
             
             html += '</div>';
             html += '</div>';
             
             html += '<div class="bg-gray-500 bg-opacity-20 p-4 rounded-lg mt-4">';
-            html += '<h3 class="text-lg font-semibold mb-2 text-gray-300">原始 UA</h3>';
+            html += `<h3 class="text-lg font-semibold mb-2 text-gray-300">${t('uaOriginal')}</h3>`;
             html += `<pre class="bg-black bg-opacity-40 p-3 rounded text-xs break-all">${ua}</pre>`;
             html += '</div>';
             
@@ -442,6 +517,7 @@
 
         // Base64 Tools
         function processBase64(input) {
+            const t = window.i18n ? window.i18n.t : (key) => key;
             let html = '<div class="space-y-4">';
             
             try {
@@ -475,32 +551,32 @@
                         
                         if (isImage) {
                             html += '<div class="bg-pink-500 bg-opacity-20 p-4 rounded-lg">';
-                            html += '<h3 class="text-lg font-semibold mb-2 text-pink-300">Base64 图片</h3>';
-                            html += `<p class="text-gray-300 mb-2">图片类型: ${imageType}</p>`;
+                            html += `<h3 class="text-lg font-semibold mb-2 text-pink-300">${t('base64Image')}</h3>`;
+                            html += `<p class="text-gray-300 mb-2">${t('base64ImageType')}${imageType}</p>`;
                             html += `<img src="data:image/${imageType.toLowerCase()};base64,${input.trim()}" class="max-w-full h-auto rounded-lg border border-gray-600" alt="Base64 Image">`;
                             html += '</div>';
                         } else {
                             html += '<div class="bg-green-500 bg-opacity-20 p-4 rounded-lg">';
-                            html += '<h3 class="text-lg font-semibold mb-2 text-green-300">解码后的内容</h3>';
+                            html += `<h3 class="text-lg font-semibold mb-2 text-green-300">${t('base64Decoded')}</h3>`;
                             html += `<pre class="bg-black bg-opacity-40 p-4 rounded overflow-x-auto text-sm break-all">${decoded}</pre>`;
                             html += '</div>';
                         }
                     } catch (e) {
                         html += '<div class="bg-yellow-500 bg-opacity-20 p-4 rounded-lg">';
-                        html += '<p class="text-yellow-300">Base64 字符串格式正确，但解码失败</p>';
+                        html += `<p class="text-yellow-300">${t('base64DecodeError')}</p>`;
                         html += '</div>';
                     }
                 } else {
                     // Encode to base64
                     const encoded = btoa(input);
                     html += '<div class="bg-blue-500 bg-opacity-20 p-4 rounded-lg">';
-                    html += '<h3 class="text-lg font-semibold mb-2 text-blue-300">编码后的 Base64</h3>';
+                    html += `<h3 class="text-lg font-semibold mb-2 text-blue-300">${t('base64Encoded')}</h3>`;
                     html += `<pre class="bg-black bg-opacity-40 p-4 rounded overflow-x-auto text-sm break-all">${encoded}</pre>`;
                     html += '</div>';
                 }
             } catch (error) {
                 html += `<div class="bg-red-500 bg-opacity-20 p-4 rounded-lg">`;
-                html += `<p class="text-red-300">错误: ${error.message}</p>`;
+                html += `<p class="text-red-300">${t('base64Error')}${error.message}</p>`;
                 html += '</div>';
             }
             
@@ -510,27 +586,30 @@
 
         // Clear all
         function clearAll() {
+            const t = window.i18n ? window.i18n.t : (key) => key;
             document.getElementById('input').value = '';
-            document.getElementById('output').innerHTML = '<p class="text-gray-400 text-center">处理结果将显示在这里...</p>';
+            document.getElementById('output').innerHTML = `<p class="text-gray-400 text-center">${t('outputPlaceholder')}</p>`;
         }
 
         // Copy output
         function copyOutput() {
+            const t = window.i18n ? window.i18n.t : (key) => key;
             const output = document.getElementById('output');
             const text = output.innerText || output.textContent;
+            const placeholder = t('outputPlaceholder');
             
-            if (text && !text.includes('处理结果将显示在这里')) {
+            if (text && !text.includes(placeholder)) {
                 navigator.clipboard.writeText(text).then(() => {
                     const btn = event.target;
                     const originalText = btn.textContent;
-                    btn.textContent = '✅ 已复制';
+                    btn.textContent = t('copied');
                     btn.classList.add('bg-green-600');
                     setTimeout(() => {
                         btn.textContent = originalText;
                         btn.classList.remove('bg-green-600');
                     }, 2000);
                 }).catch(err => {
-                    alert('复制失败: ' + err);
+                    alert(t('copyError') + err);
                 });
             }
         }
