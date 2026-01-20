@@ -1,4 +1,4 @@
-# 智能文本处理工具 tools.zeusro.tech
+# 智能文本处理工具
 
 ![智能文本处理工具界面预览](docs/screenshot.png)
 
