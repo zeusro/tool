@@ -1,0 +1,27 @@
+{
+  "name": "tool",
+  "version": "1.0.0",
+  "description": "一个基于 Tailwind CSS 的炫酷前端工具网页，提供多种文本处理功能。",
+  "main": "go-struct-to-json.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeusro/tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zeusro/tool/issues"
+  },
+  "homepage": "https://github.com/zeusro/tool#readme",
+  "dependencies": {
+    "puppeteer": "^24.35.0"
+  }
+}

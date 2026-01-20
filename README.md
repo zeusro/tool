@@ -1,5 +1,7 @@
 # 智能文本处理工具 tools.zeusro.tech
 
+![智能文本处理工具界面预览](docs/screenshot.png)
+
 一个基于 Tailwind CSS 的炫酷前端工具网页，提供多种文本处理功能。
 
 ## 功能特性
@@ -43,7 +45,7 @@
 ## 技术栈
 
 - **Tailwind CSS** - 现代化 CSS 框架
-- **原生 JavaScript** - 无需额外依赖
+- **原生 JavaScript** - 无需额外依赖（运行时）
 - **响应式设计** - 支持移动端和桌面端
 
 ## 界面特色
