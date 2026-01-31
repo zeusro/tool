@@ -4,6 +4,14 @@
 
 一个基于 Tailwind CSS 的炫酷前端工具网页，提供多种文本处理功能。
 
+- 在项目根目录执行
+
+```bash
+docker compose up -d
+# 停止
+docker compose down
+```
+
 ## 功能特性
 
 ### 🔗 URL 解析
